@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  tidb:
+    image: pingcap/tidb:latest
+    container_name: sportgym-tidb
+    ports:
+      - "4000:4000"
+      - "10080:10080"
+    environment:
+      - TZ=UTC
+    volumes:
+      - tidb_data:/var/lib/tidb
+    restart: unless-stopped
+    command: >
+      --store=tikv
+      --path=0.0.0.0:4000
+      --status=10080
+      --log-file=/dev/stdout
+      --advertise-address=127.0.0.1
+
+  backend:
+    build: .
+    container_name: sportgym-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - TIDB_HOST=tidb
+      - TIDB_PORT=4000
+      - TIDB_USER=root
+      - TIDB_PASSWORD=
+      - TIDB_DATABASE=sportgym_db
+      - JWT_SECRET=sportgym_jwt_secret_key_2024_secure
+      - JWT_EXPIRES_IN=7d
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:5173
+    depends_on:
+      - tidb
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  tidb_data:

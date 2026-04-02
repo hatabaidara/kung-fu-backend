@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sportgym-backend
+  labels:
+    app: sportgym-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sportgym-backend
+  template:
+    metadata:
+      labels:
+        app: sportgym-backend
+    spec:
+      containers:
+      - name: backend
+        image: sportgym-backend:latest
+        ports:
+        - containerPort: 3001
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: TIDB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: tidb-secret
+              key: host
+        - name: TIDB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: tidb-secret
+              key: port
+        - name: TIDB_USER
+          valueFrom:
+            secretKeyRef:
+              name: tidb-secret
+              key: user
+        - name: TIDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tidb-secret
+              key: password
+        - name: TIDB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: tidb-secret
+              key: database
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: jwt-secret
+        - name: PORT
+          value: "3001"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sportgym-backend-service
+spec:
+  selector:
+    app: sportgym-backend
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tidb-secret
+type: Opaque
+data:
+  host: <base64-encoded-host>
+  port: <base64-encoded-port>
+  user: <base64-encoded-user>
+  password: <base64-encoded-password>
+  database: <base64-encoded-database>
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+data:
+  jwt-secret: <base64-encoded-jwt-secret>
