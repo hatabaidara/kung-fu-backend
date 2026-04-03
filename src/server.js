@@ -85,6 +85,50 @@ app.get('/api/auth/test', (req, res) => {
   });
 });
 
+// Temporary POST routes for immediate testing
+app.post('/api/test-register', async (req, res) => {
+  console.log('🔥 POST /api/test-register called');
+  try {
+    const { username, email, password, role = 'staff' } = req.body;
+
+    // Validate input
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Username, email, and password are required' });
+    }
+
+    // Simple success response for testing
+    res.status(201).json({
+      message: 'User registered successfully (test mode)',
+      user: { username, email, role }
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/test-login', async (req, res) => {
+  console.log('🔥 POST /api/test-login called');
+  try {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Simple success response for testing
+    res.json({
+      message: 'Login successful (test mode)',
+      token: 'test-jwt-token-' + Date.now(),
+      user: { username }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
 // Direct auth routes (ensure they work regardless of auth.js loading)
 app.post('/api/auth/register', async (req, res) => {
   console.log('🔥 POST /api/auth/register called');
