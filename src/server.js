@@ -76,34 +76,7 @@ try {
   console.error('❌ Failed to load announcements routes:', error.message);
 }
 
-// Use routes
-if (authRoutes) app.use('/api/auth', authRoutes);
-if (membersRoutes) app.use('/api/members', membersRoutes);
-if (paymentsRoutes) app.use('/api/payments', paymentsRoutes);
-if (attendanceRoutes) app.use('/api/attendance', attendanceRoutes);
-if (announcementsRoutes) app.use('/api/announcements', announcementsRoutes);
-
-// Add test routes
-try {
-  const testRoutes = require('./routes/test');
-  app.use('/api/test', testRoutes);
-  console.log('✅ Test routes loaded');
-} catch (error) {
-  console.error('❌ Failed to load test routes:', error.message);
-}
-
-// Debug route to check if authRoutes is loaded
-app.get('/api/debug', (req, res) => {
-  res.json({
-    authRoutes: typeof authRoutes,
-    authRoutesDefined: !!authRoutes,
-    membersRoutes: typeof membersRoutes,
-    membersRoutesDefined: !!membersRoutes,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Simple auth routes (directly in server.js)
+// Direct auth routes (ensure they work regardless of auth.js loading)
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, email, password, role = 'staff' } = req.body;
@@ -143,6 +116,33 @@ app.post('/api/auth/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
+});
+
+// Use routes
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (membersRoutes) app.use('/api/members', membersRoutes);
+if (paymentsRoutes) app.use('/api/payments', paymentsRoutes);
+if (attendanceRoutes) app.use('/api/attendance', attendanceRoutes);
+if (announcementsRoutes) app.use('/api/announcements', announcementsRoutes);
+
+// Add test routes
+try {
+  const testRoutes = require('./routes/test');
+  app.use('/api/test', testRoutes);
+  console.log('✅ Test routes loaded');
+} catch (error) {
+  console.error('❌ Failed to load test routes:', error.message);
+}
+
+// Debug route to check if authRoutes is loaded
+app.get('/api/debug', (req, res) => {
+  res.json({
+    authRoutes: typeof authRoutes,
+    authRoutesDefined: !!authRoutes,
+    membersRoutes: typeof membersRoutes,
+    membersRoutesDefined: !!membersRoutes,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Simple test endpoint (no auth required)
