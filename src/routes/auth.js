@@ -1,13 +1,23 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/database');
+
+let pool;
+try {
+  ({ pool } = require('../config/database'));
+} catch (error) {
+  console.error('Database not available for auth routes:', error.message);
+}
 
 const router = express.Router();
 
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
+
     const { username, email, password, role = 'staff' } = req.body;
 
     // Validate input
@@ -56,6 +66,10 @@ router.post('/register', async (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
+
     const { username, password } = req.body;
 
     // Validate input

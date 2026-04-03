@@ -91,6 +91,9 @@ app.get('/api/test', (req, res) => {
     message: 'Test endpoint working',
     environment: process.env.NODE_ENV,
     database: process.env.TIDB_DATABASE || 'Not configured',
+    host: process.env.TIDB_HOST || 'Not configured',
+    user: process.env.TIDB_USER || 'Not configured',
+    jwt_secret: process.env.JWT_SECRET ? 'Configured' : 'Not configured',
     timestamp: new Date().toISOString()
   });
 });
