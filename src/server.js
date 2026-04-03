@@ -87,6 +87,7 @@ app.get('/api/auth/test', (req, res) => {
 
 // Direct auth routes (ensure they work regardless of auth.js loading)
 app.post('/api/auth/register', async (req, res) => {
+  console.log('🔥 POST /api/auth/register called');
   try {
     const { username, email, password, role = 'staff' } = req.body;
 
@@ -107,6 +108,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
+  console.log('🔥 POST /api/auth/login called');
   try {
     const { username, password } = req.body;
 
@@ -127,8 +129,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Use routes
-if (authRoutes) app.use('/api/auth', authRoutes);
+// Use routes (excluding auth to avoid conflicts)
 if (membersRoutes) app.use('/api/members', membersRoutes);
 if (paymentsRoutes) app.use('/api/payments', paymentsRoutes);
 if (attendanceRoutes) app.use('/api/attendance', attendanceRoutes);
