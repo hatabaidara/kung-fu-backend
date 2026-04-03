@@ -145,6 +145,16 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
+// Test route to verify deployment
+app.get('/api/deployment-test', (req, res) => {
+  res.json({
+    message: 'Deployment test successful',
+    version: '7b04dca',
+    timestamp: new Date().toISOString(),
+    authRoutesAvailable: true
+  });
+});
+
 // Simple test endpoint (no auth required)
 app.get('/api/test', (req, res) => {
   res.json({
