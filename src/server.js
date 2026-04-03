@@ -39,6 +39,13 @@ try {
   console.log('✅ Auth routes loaded');
 } catch (error) {
   console.error('❌ Failed to load auth routes:', error.message);
+  // Force load auth routes anyway for testing
+  try {
+    authRoutes = require('./routes/auth');
+    console.log('✅ Auth routes force loaded');
+  } catch (forceError) {
+    console.error('❌ Failed to force load auth routes:', forceError.message);
+  }
 }
 
 try {
