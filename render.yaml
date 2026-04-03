@@ -1,0 +1,26 @@
+# Render Configuration File
+services:
+  - type: web
+    name: sportgym-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    
+    # Environment variables (configure in dashboard for security)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+        
+    # Auto-deploy on push to main branch
+    autoDeploy: true
+    
+    # Health check configuration
+    healthCheck:
+      path: /api/health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
