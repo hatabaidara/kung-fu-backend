@@ -76,6 +76,15 @@ try {
   console.error('❌ Failed to load announcements routes:', error.message);
 }
 
+// Test GET route to verify POST routes are defined
+app.get('/api/auth/test', (req, res) => {
+  res.json({
+    message: 'Auth routes test endpoint',
+    available: true,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Direct auth routes (ensure they work regardless of auth.js loading)
 app.post('/api/auth/register', async (req, res) => {
   try {
