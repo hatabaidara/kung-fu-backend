@@ -85,6 +85,59 @@ try {
   console.error('❌ Failed to load test routes:', error.message);
 }
 
+// Debug route to check if authRoutes is loaded
+app.get('/api/debug', (req, res) => {
+  res.json({
+    authRoutes: typeof authRoutes,
+    authRoutesDefined: !!authRoutes,
+    membersRoutes: typeof membersRoutes,
+    membersRoutesDefined: !!membersRoutes,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Simple auth routes (directly in server.js)
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, email, password, role = 'staff' } = req.body;
+
+    // Validate input
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Username, email, and password are required' });
+    }
+
+    // Simple success response for testing
+    res.status(201).json({
+      message: 'User registered successfully (test mode)',
+      user: { username, email, role }
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Simple success response for testing
+    res.json({
+      message: 'Login successful (test mode)',
+      token: 'test-jwt-token-' + Date.now(),
+      user: { username }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
 // Simple test endpoint (no auth required)
 app.get('/api/test', (req, res) => {
   res.json({
