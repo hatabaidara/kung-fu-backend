@@ -3,10 +3,12 @@ services:
   - type: web
     name: sportgym-backend
     env: node
+    nodeVersion: 18.18.0  # Node 18 stable and fast
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: npm ci --production
+    startCommand: node src/server.js
     healthCheckPath: /api/health
+    healthCheckTimeout: 100
     
     # Environment variables (configure in dashboard for security)
     envVars:
@@ -14,6 +16,20 @@ services:
         value: production
       - key: PORT
         value: 3001
+      - key: JWT_SECRET
+        sync: false
+      - key: TIDB_HOST
+        sync: false
+      - key: TIDB_PORT
+        sync: false
+      - key: TIDB_USER
+        sync: false
+      - key: TIDB_PASSWORD
+        sync: false
+      - key: TIDB_DATABASE
+        sync: false
+      - key: FRONTEND_URL
+        value: https://kung-fu-frontend.vercel.app
         
     # Auto-deploy on push to main branch
     autoDeploy: true
@@ -21,6 +37,6 @@ services:
     # Health check configuration
     healthCheck:
       path: /api/health
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3

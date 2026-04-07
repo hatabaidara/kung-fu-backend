@@ -4,6 +4,12 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Log de démarrage pour confirmer le nouveau code
+console.log('🚀 Server starting...');
+console.log('📦 Version with CRUD fixes loaded');
+console.log('🔗 Environment:', process.env.NODE_ENV || 'development');
+console.log('🌐 Port:', process.env.PORT || 3001);
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
