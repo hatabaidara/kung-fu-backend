@@ -61,8 +61,8 @@ router.post('/', async (req, res) => {
       member_id, amount, payment_type, payment_date, status = 'paid', payment_method, description
     } = req.body;
 
-    // Generate payment ID
-    const paymentId = `P${Date.now()}`;
+    // Generate numeric payment ID
+    const paymentId = Date.now();
 
     const [result] = await pool.query(`
       INSERT INTO payments (

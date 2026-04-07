@@ -78,8 +78,8 @@ router.post('/checkin', async (req, res) => {
 
     // Check if member exists
     const [members] = await pool.query(
-      'SELECT id, name FROM members WHERE id = ? AND active = TRUE',
-      [member_id]
+      'SELECT id, first_name, last_name FROM members WHERE id = ? AND membership_status = ?',
+      [member_id, 'active']
     );
 
     if (members.length === 0) {
@@ -97,12 +97,12 @@ router.post('/checkin', async (req, res) => {
     }
 
     // Generate attendance ID
-    const attendanceId = `A${Date.now()}`;
+    const attendanceId = Date.now();
     const checkInTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
 
     const [result] = await pool.query(`
-      INSERT INTO attendance (id, member_id, date, check_in_time, status)
-      VALUES (?, ?, ?, ?, 'present')
+      INSERT INTO attendance (id, member_id, date, check_in_time)
+      VALUES (?, ?, ?, ?)
     `, [attendanceId, member_id, date, checkInTime]);
 
     res.status(201).json({
@@ -151,23 +151,26 @@ router.put('/checkout/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      member_id, date, check_in, check_out, status = 'présent', notes
+      member_id, date, check_in_time = new Date().toTimeString().split(' ')[0].substring(0, 5), status = 'present', notes
     } = req.body;
 
     // Generate attendance ID
-    const attendanceId = `A${Date.now()}`;
+    const attendanceId = Date.now();
 
     const [result] = await pool.query(`
-      INSERT INTO attendance (
-        id, member_id, date, check_in, check_out, status, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      attendanceId, member_id, date, check_in, check_out, status, notes
-    ]);
+      INSERT INTO attendance (id, member_id, date, check_in_time, status, notes)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [attendanceId, member_id, date, check_in_time, status, notes]);
 
     res.status(201).json({
       message: 'Attendance record created successfully',
-      attendance: { id: attendanceId, ...req.body }
+      attendance: {
+        id: attendanceId,
+        member_id,
+        date,
+        check_in_time,
+        status
+      }
     });
   } catch (error) {
     console.error('Create attendance error:', error);

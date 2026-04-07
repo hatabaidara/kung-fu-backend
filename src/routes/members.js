@@ -58,12 +58,12 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      id, first_name, last_name, phone, email, date_of_birth,
+      first_name, last_name, phone, email, date_of_birth,
       membership_type, membership_status, join_date, expiry_date
     } = req.body;
 
-    // Generate member ID if not provided
-    const memberId = id || `M${Date.now()}`;
+    // Generate numeric member ID (smaller for INT range)
+    const memberId = Date.now() % 1000000000;
 
     const [result] = await pool.query(`
       INSERT INTO members (

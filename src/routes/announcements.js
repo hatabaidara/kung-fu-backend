@@ -39,19 +39,18 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      title, content, type = 'general', priority = 'medium',
-      date = new Date().toISOString().split('T')[0], author_id, active = true
+      title, content, type, date = new Date().toISOString().split('T')[0], author_id, active = true
     } = req.body;
 
-    // Generate announcement ID
-    const announcementId = `ANN${Date.now()}`;
+    // Generate numeric announcement ID
+    const announcementId = Date.now();
 
     const [result] = await pool.query(`
       INSERT INTO announcements (
-        id, title, content, type, priority, date, author_id, active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, title, content, type, publish_date, author_id, active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
-      announcementId, title, content, type, priority, date, author_id, active
+      announcementId, title, content, type, date, author_id, active
     ]);
 
     res.status(201).json({
