@@ -39,23 +39,19 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      title, content, type, date = new Date().toISOString().split('T')[0], author_id, active = true
+      title, content, type, status, author_id
     } = req.body;
 
-    // Generate numeric announcement ID
-    const announcementId = Date.now();
+    const sql = `INSERT INTO announcements 
+     (title, content, type, status, author_id, publish_date) 
+     VALUES (?, ?, ?, ?, ?, NOW())`;
+   const values = [title, content, type, status || 'published', author_id || 1];
 
-    const [result] = await pool.query(`
-      INSERT INTO announcements (
-        id, title, content, type, publish_date, author_id, active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      announcementId, title, content, type, date, author_id, active
-    ]);
+    const [result] = await pool.query(sql, values);
 
     res.status(201).json({
       message: 'Announcement created successfully',
-      announcement: { id: announcementId, ...req.body }
+      announcement: { id: result.insertId, ...req.body }
     });
   } catch (error) {
     console.error('Create announcement error:', error);

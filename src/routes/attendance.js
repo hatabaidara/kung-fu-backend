@@ -96,23 +96,23 @@ router.post('/checkin', async (req, res) => {
       return res.status(400).json({ error: 'Member already checked in today' });
     }
 
-    // Generate attendance ID
-    const attendanceId = Date.now();
-    const checkInTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
+    // Generate attendance timestamp
+    const checkInTime = new Date().toISOString();
 
-    const [result] = await pool.query(`
-      INSERT INTO attendance (id, member_id, date, check_in_time)
-      VALUES (?, ?, ?, ?)
-    `, [attendanceId, member_id, date, checkInTime]);
+    const sql = `INSERT INTO attendance 
+     (member_id, check_in_time, date, notes) 
+     VALUES (?, NOW(), ?, ?)`;
+   const values = [member_id, date, null];
+
+    const [result] = await pool.query(sql, values);
 
     res.status(201).json({
       message: 'Check-in successful',
       attendance: {
-        id: attendanceId,
+        id: result.insertId,
         member_id,
         date,
-        check_in: checkInTime,
-        status: 'présent'
+        check_in_time: checkInTime
       }
     });
   } catch (error) {
@@ -151,25 +151,24 @@ router.put('/checkout/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      member_id, date, check_in_time = new Date().toTimeString().split(' ')[0].substring(0, 5), status = 'present', notes
+      member_id, date, check_in_time = new Date().toISOString(), notes
     } = req.body;
 
-    // Generate attendance ID
-    const attendanceId = Date.now();
+    const sql = `INSERT INTO attendance 
+     (member_id, check_in_time, date, notes) 
+     VALUES (?, NOW(), ?, ?)`;
+   const values = [member_id, date, notes];
 
-    const [result] = await pool.query(`
-      INSERT INTO attendance (id, member_id, date, check_in_time, status, notes)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [attendanceId, member_id, date, check_in_time, status, notes]);
+    const [result] = await pool.query(sql, values);
 
     res.status(201).json({
       message: 'Attendance record created successfully',
       attendance: {
-        id: attendanceId,
+        id: result.insertId,
         member_id,
         date,
         check_in_time,
-        status
+        notes
       }
     });
   } catch (error) {

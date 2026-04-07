@@ -61,20 +61,16 @@ router.post('/', async (req, res) => {
       member_id, amount, payment_type, payment_date, status = 'paid', payment_method, description
     } = req.body;
 
-    // Generate numeric payment ID
-    const paymentId = Date.now();
+    const sql = `INSERT INTO payments 
+     (member_id, amount, payment_type, payment_method, payment_date, status, description) 
+     VALUES (?, ?, ?, ?, ?, ?, ?)`;
+   const values = [member_id, amount, payment_type, payment_method, payment_date, status, description];
 
-    const [result] = await pool.query(`
-      INSERT INTO payments (
-        id, member_id, amount, payment_type, payment_date, status, payment_method, description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      paymentId, member_id, amount, payment_type, payment_date, status, payment_method, description
-    ]);
+    const [result] = await pool.query(sql, values);
 
     res.status(201).json({
       message: 'Payment created successfully',
-      payment: { id: paymentId, ...req.body }
+      payment: { id: result.insertId, ...req.body }
     });
   } catch (error) {
     console.error('Create payment error:', error);
