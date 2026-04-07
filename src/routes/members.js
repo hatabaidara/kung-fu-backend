@@ -58,8 +58,8 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      id, name, phone, email, discipline, age, address,
-      licenseNumber, licenseStatus, licenseExpiry, joinDate, parent, active
+      id, first_name, last_name, phone, email, date_of_birth,
+      membership_type, membership_status, join_date, expiry_date
     } = req.body;
 
     // Generate member ID if not provided
@@ -67,12 +67,12 @@ router.post('/', async (req, res) => {
 
     const [result] = await pool.query(`
       INSERT INTO members (
-        id, name, phone, email, discipline, age, address,
-        license_number, license_status, license_expiry, join_date, parent, active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, first_name, last_name, phone, email, date_of_birth,
+        membership_type, membership_status, join_date, expiry_date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      memberId, name, phone, email, discipline, age, address,
-      licenseNumber, licenseStatus, licenseExpiry, joinDate, parent, active !== false
+      memberId, first_name, last_name, phone, email, date_of_birth,
+      membership_type, membership_status, join_date, expiry_date
     ]);
 
     res.status(201).json({
@@ -81,10 +81,15 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Create member error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Error sqlState:', error.sqlState);
     if (error.code === 'ER_DUP_ENTRY') {
       res.status(400).json({ error: 'Member ID already exists' });
     } else {
-      res.status(500).json({ error: 'Failed to create member' });
+      res.status(500).json({ error: 'Failed to create member', details: error.message });
     }
   }
 });

@@ -58,7 +58,7 @@ router.get('/member/:memberId', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      member_id, amount, type, date, status = 'payé', payment_method, notes
+      member_id, amount, payment_type, payment_date, status = 'paid', payment_method, description
     } = req.body;
 
     // Generate payment ID
@@ -66,10 +66,10 @@ router.post('/', async (req, res) => {
 
     const [result] = await pool.query(`
       INSERT INTO payments (
-        id, member_id, amount, type, date, status, payment_method, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, member_id, amount, payment_type, payment_date, status, payment_method, description
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      paymentId, member_id, amount, type, date, status, payment_method, notes
+      paymentId, member_id, amount, payment_type, payment_date, status, payment_method, description
     ]);
 
     res.status(201).json({
@@ -78,7 +78,12 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Create payment error:', error);
-    res.status(500).json({ error: 'Failed to create payment' });
+    console.error('Error stack:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Error sqlState:', error.sqlState);
+    res.status(500).json({ error: 'Failed to create payment', details: error.message });
   }
 });
 

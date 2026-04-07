@@ -39,8 +39,8 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      title, content, type = 'général', priority = 'moyenne',
-      date = new Date().toISOString().split('T')[0], author, active = true
+      title, content, type = 'general', priority = 'medium',
+      date = new Date().toISOString().split('T')[0], author_id, active = true
     } = req.body;
 
     // Generate announcement ID
@@ -48,10 +48,10 @@ router.post('/', async (req, res) => {
 
     const [result] = await pool.query(`
       INSERT INTO announcements (
-        id, title, content, type, priority, date, author, active
+        id, title, content, type, priority, date, author_id, active
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      announcementId, title, content, type, priority, date, author, active
+      announcementId, title, content, type, priority, date, author_id, active
     ]);
 
     res.status(201).json({
@@ -60,7 +60,12 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Create announcement error:', error);
-    res.status(500).json({ error: 'Failed to create announcement' });
+    console.error('Error stack:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Error sqlState:', error.sqlState);
+    res.status(500).json({ error: 'Failed to create announcement', details: error.message });
   }
 });
 

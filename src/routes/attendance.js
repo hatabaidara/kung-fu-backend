@@ -101,8 +101,8 @@ router.post('/checkin', async (req, res) => {
     const checkInTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
 
     const [result] = await pool.query(`
-      INSERT INTO attendance (id, member_id, date, check_in, status)
-      VALUES (?, ?, ?, ?, 'présent')
+      INSERT INTO attendance (id, member_id, date, check_in_time, status)
+      VALUES (?, ?, ?, ?, 'present')
     `, [attendanceId, member_id, date, checkInTime]);
 
     res.status(201).json({
@@ -117,7 +117,12 @@ router.post('/checkin', async (req, res) => {
     });
   } catch (error) {
     console.error('Check-in error:', error);
-    res.status(500).json({ error: 'Failed to check in member' });
+    console.error('Error stack:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Error sqlState:', error.sqlState);
+    res.status(500).json({ error: 'Failed to check in member', details: error.message });
   }
 });
 
