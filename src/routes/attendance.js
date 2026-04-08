@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
       SELECT a.*, m.name as member_name, m.discipline 
       FROM attendance a 
       LEFT JOIN members m ON a.member_id = m.id 
-      ORDER BY a.date DESC, a.check_in DESC
+      ORDER BY a.created_at DESC, a.check_in DESC
     `);
     res.json(attendance);
   } catch (error) {
@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
 router.get('/member/:memberId', async (req, res) => {
   try {
     const [attendance] = await pool.query(
-      'SELECT * FROM attendance WHERE member_id = ? ORDER BY date DESC',
+      'SELECT * FROM attendance WHERE member_id = ? ORDER BY created_at DESC',
       [req.params.memberId]
     );
     res.json(attendance);
@@ -61,7 +61,7 @@ router.get('/date/:date', async (req, res) => {
       SELECT a.*, m.name as member_name, m.discipline 
       FROM attendance a 
       LEFT JOIN members m ON a.member_id = m.id 
-      WHERE a.date = ?
+      WHERE a.created_at = ?
       ORDER BY a.check_in ASC
     `, [req.params.date]);
     res.json(attendance);
@@ -88,7 +88,7 @@ router.post('/checkin', async (req, res) => {
 
     // Check if already checked in today
     const [existing] = await pool.query(
-      'SELECT id FROM attendance WHERE member_id = ? AND date = ?',
+      'SELECT id FROM attendance WHERE member_id = ? AND created_at = ?',
       [member_id, date]
     );
 
@@ -100,7 +100,7 @@ router.post('/checkin', async (req, res) => {
     const checkInTime = new Date().toISOString();
 
     const sql = `INSERT INTO attendance 
-     (member_id, check_in_time, date, notes) 
+     (member_id, check_in_time, created_at, notes) 
      VALUES (?, NOW(), ?, ?)`;
    const values = [member_id, date, null];
 
@@ -155,7 +155,7 @@ router.post('/', async (req, res) => {
     } = req.body;
 
     const sql = `INSERT INTO attendance 
-     (member_id, check_in_time, date, notes) 
+     (member_id, check_in_time, created_at, notes) 
      VALUES (?, NOW(), ?, ?)`;
    const values = [member_id, date, notes];
 
@@ -186,10 +186,10 @@ router.put('/:id', async (req, res) => {
 
     const [result] = await pool.query(`
       UPDATE attendance SET
-        member_id = ?, date = ?, check_in = ?, check_out = ?, status = ?, notes = ?
+        member_id = ?, created_at = ?, check_in = ?, check_out = ?, status = ?, notes = ?
       WHERE id = ?
     `, [
-      member_id, date, check_in, check_out, status, notes, req.params.id
+      member_id, created_at, check_in, check_out, status, notes, req.params.id
     ]);
 
     if (result.affectedRows === 0) {
@@ -232,17 +232,17 @@ router.get('/stats/summary', async (req, res) => {
         SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent,
         SUM(CASE WHEN status = 'retard' THEN 1 ELSE 0 END) as late
       FROM attendance 
-      WHERE date = CURDATE()
+      WHERE created_at = CURDATE()
     `);
 
     const [weeklyStats] = await pool.query(`
       SELECT 
-        DATE(date) as date,
+        DATE(a.created_at) as date,
         COUNT(*) as total,
         SUM(CASE WHEN status = 'présent' THEN 1 ELSE 0 END) as present
-      FROM attendance 
-      WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-      GROUP BY DATE(date)
+      FROM attendance a 
+      WHERE a.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+      GROUP BY DATE(a.created_at)
       ORDER BY date DESC
     `);
 

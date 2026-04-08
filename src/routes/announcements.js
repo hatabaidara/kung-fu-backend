@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const [announcements] = await pool.query(
-      'SELECT * FROM announcements WHERE active = TRUE ORDER BY priority DESC, date DESC'
+      'SELECT * FROM announcements WHERE active = TRUE ORDER BY priority DESC, created_at DESC'
     );
     res.json(announcements);
   } catch (error) {
@@ -73,7 +73,7 @@ router.put('/:id', async (req, res) => {
 
     const [result] = await pool.query(`
       UPDATE announcements SET
-        title = ?, content = ?, type = ?, priority = ?, date = ?,
+        title = ?, content = ?, type = ?, priority = ?, created_at = ?,
         author = ?, active = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `, [
@@ -129,7 +129,7 @@ router.get('/recent/limit', async (req, res) => {
   try {
     const [announcements] = await pool.query(`
       SELECT * FROM announcements 
-      WHERE active = TRUE AND date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+      WHERE active = TRUE AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
       ORDER BY priority DESC, date DESC 
       LIMIT 10
     `);

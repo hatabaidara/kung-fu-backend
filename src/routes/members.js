@@ -104,14 +104,12 @@ router.put('/:id', async (req, res) => {
 
     const [result] = await pool.query(`
       UPDATE members SET
-        name = ?, phone = ?, email = ?, discipline = ?, age = ?, address = ?,
-        license_number = ?, license_status = ?, license_expiry = ?, join_date = ?,
-        parent = ?, active = ?, updated_at = CURRENT_TIMESTAMP
+        first_name = ?, last_name = ?, phone = ?, email = ?, date_of_birth = ?,
+        membership_type = ?, membership_status = ?, join_date = ?, expiry_date = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `, [
-      name, phone, email, discipline, age, address,
-      licenseNumber, licenseStatus, licenseExpiry, joinDate, parent, active !== false,
-      req.params.id
+      first_name, last_name, phone, email, date_of_birth,
+      membership_type, membership_status, join_date, expiry_date, req.params.id
     ]);
 
     if (result.affectedRows === 0) {
@@ -150,9 +148,9 @@ router.get('/search/:query', async (req, res) => {
     const query = req.params.query;
     const [members] = await pool.query(`
       SELECT * FROM members 
-      WHERE name LIKE ? OR phone LIKE ? OR email LIKE ? OR discipline LIKE ?
-      ORDER BY name ASC
-    `, [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]);
+      WHERE first_name LIKE ? OR last_name LIKE ? OR phone LIKE ? OR email LIKE ? OR membership_type LIKE ?
+      ORDER BY first_name ASC
+    `, [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]);
 
     res.json(members);
   } catch (error) {
