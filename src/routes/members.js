@@ -98,8 +98,8 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const {
-      name, phone, email, discipline, age, address,
-      licenseNumber, licenseStatus, licenseExpiry, joinDate, parent, active
+      first_name, last_name, phone, email, date_of_birth,
+      membership_type, membership_status, join_date, expiry_date
     } = req.body;
 
     const [result] = await pool.query(`

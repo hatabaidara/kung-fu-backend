@@ -45,8 +45,11 @@ let { testConnection, initializeDatabase } = require('./config/database');
 
 // Use TiDB configuration for Render deployment
 if (process.env.NODE_ENV === 'production' && process.env.TIDB_HOST) {
-  console.log('🔌 Using TiDB configuration for Render deployment');
+  console.log('Using TiDB configuration for Render deployment');
   ({ testConnection, initializeDatabase } = require('./config/database-tidb-render'));
+} else {
+  console.log('Using mock database for testing');
+  ({ testConnection, initializeDatabase } = require('./config/database-mock'));
 }
 
 // Initialize database
