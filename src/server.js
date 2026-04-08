@@ -41,7 +41,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import database configuration
-const { testConnection, initializeDatabase } = require('./config/database');
+let { testConnection, initializeDatabase } = require('./config/database');
+
+// Use TiDB configuration for Render deployment
+if (process.env.NODE_ENV === 'production' && process.env.TIDB_HOST) {
+  console.log('🔌 Using TiDB configuration for Render deployment');
+  ({ testConnection, initializeDatabase } = require('./config/database-tidb-render'));
+}
 
 // Initialize database
 initializeDatabase();
