@@ -8,8 +8,11 @@ const dbConfig = {
   user: process.env.TIDB_USER || 'root',
   password: process.env.TIDB_PASSWORD || '',
   database: process.env.TIDB_DATABASE || 'sportgym_db',
-  ssl: { rejectUnauthorized: false },
-  connectionLimit: 10
+  ssl: {
+    rejectUnauthorized: false
+  },
+  connectionLimit: 10,
+  charset: 'utf8mb4'
 };
 
 // Create connection pool

@@ -1,186 +1,142 @@
-const mysql = require('mysql2/promise');
+// Script pour vérifier directement la base de données TiDB
+// Compte les enregistrements AVANT et APRÈS un test d'insertion
 
-// TiDB Cloud credentials
-const connectionConfig = {
-  host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
-  port: 4000,
-  user: '3YcYtVHpR3uqqKo.root',
-  password: 'rLCgQu4liNYBU9On',
-  ssl: { rejectUnauthorized: false }
-};
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 async function verifyTiDBDatabase() {
-  let connection;
+  console.log('🔍 VÉRIFICATION DIRECTE DE LA BASE DE DONNÉES TiDB');
+  console.log('='.repeat(60));
   
+  let connection;
   try {
-    console.log('🔌 Connecting to TiDB Cloud...');
-    connection = await mysql.createConnection(connectionConfig);
-    console.log('✅ Connected to TiDB Cloud successfully!');
-
-    // Check if sportgym_db exists
-    console.log('\n📊 Checking databases...');
-    const [databases] = await connection.execute('SHOW DATABASES');
-    const sportgymDbExists = databases.some(db => db.Database === 'sportgym_db');
-    
-    console.log('Available databases:');
-    databases.forEach(db => {
-      console.log(`  - ${db.Database}`);
+    // Connexion à TiDB
+    connection = await mysql.createConnection({
+      host: process.env.DB_HOST || 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
+      port: process.env.DB_PORT || '4000',
+      user: process.env.DB_USER || '3YcYtVHpR3uqqKo.root',
+      password: process.env.DB_PASSWORD || 'your_password_here',
+      database: process.env.DB_NAME || 'sportgym_db'
     });
+
+    console.log('✅ Connexion à TiDB réussie');
+    console.log('📊 Base de données:', connection.config.database);
+    console.log('');
+
+    // Compter les enregistrements AVANT le test
+    console.log('📋 ÉTAT AVANT TEST D\'INSERTION:');
     
-    if (sportgymDbExists) {
-      console.log('\n✅ sportgym_db database found!');
-      
-      // Switch to sportgym_db
-      await connection.execute('USE sportgym_db');
-      console.log('🔄 Switched to sportgym_db database');
-      
-      // Check tables
-      console.log('\n📋 Checking tables...');
-      const [tables] = await connection.execute('SHOW TABLES');
-      
-      if (tables.length > 0) {
-        console.log(`✅ Found ${tables.length} tables:`);
-        tables.forEach(table => {
-          console.log(`  - ${Object.values(table)[0]}`);
-        });
-        
-        // Check table structures and data
-        console.log('\n🔍 Verifying table structures and data...');
-        
-        // Users table
-        try {
-          const [users] = await connection.execute('DESCRIBE users');
-          console.log('\n👥 Users table structure:');
-          users.forEach(col => console.log(`  - ${col.Field}: ${col.Type}`));
-          
-          const [userCount] = await connection.execute('SELECT COUNT(*) as count FROM users');
-          console.log(`📊 Users count: ${userCount[0].count}`);
-          
-          if (userCount[0].count > 0) {
-            const [sampleUsers] = await connection.execute('SELECT username, email, role FROM users LIMIT 3');
-            console.log('📝 Sample users:');
-            sampleUsers.forEach(user => {
-              console.log(`  - ${user.username} (${user.email}) - ${user.role}`);
-            });
-          }
-        } catch (error) {
-          console.log('❌ Users table error:', error.message);
-        }
-        
-        // Members table
-        try {
-          const [members] = await connection.execute('DESCRIBE members');
-          console.log('\n🏃 Members table structure:');
-          members.forEach(col => console.log(`  - ${col.Field}: ${col.Type}`));
-          
-          const [memberCount] = await connection.execute('SELECT COUNT(*) as count FROM members');
-          console.log(`📊 Members count: ${memberCount[0].count}`);
-          
-          if (memberCount[0].count > 0) {
-            const [sampleMembers] = await connection.execute('SELECT first_name, last_name, email, membership_type FROM members LIMIT 3');
-            console.log('📝 Sample members:');
-            sampleMembers.forEach(member => {
-              console.log(`  - ${member.first_name} ${member.last_name} (${member.email}) - ${member.membership_type}`);
-            });
-          }
-        } catch (error) {
-          console.log('❌ Members table error:', error.message);
-        }
-        
-        // Payments table
-        try {
-          const [payments] = await connection.execute('DESCRIBE payments');
-          console.log('\n💰 Payments table structure:');
-          payments.forEach(col => console.log(`  - ${col.Field}: ${col.Type}`));
-          
-          const [paymentCount] = await connection.execute('SELECT COUNT(*) as count FROM payments');
-          console.log(`📊 Payments count: ${paymentCount[0].count}`);
-        } catch (error) {
-          console.log('❌ Payments table error:', error.message);
-        }
-        
-        // Attendance table
-        try {
-          const [attendance] = await connection.execute('DESCRIBE attendance');
-          console.log('\n📅 Attendance table structure:');
-          attendance.forEach(col => console.log(`  - ${col.Field}: ${col.Type}`));
-          
-          const [attendanceCount] = await connection.execute('SELECT COUNT(*) as count FROM attendance');
-          console.log(`📊 Attendance records count: ${attendanceCount[0].count}`);
-        } catch (error) {
-          console.log('❌ Attendance table error:', error.message);
-        }
-        
-        // Announcements table
-        try {
-          const [announcements] = await connection.execute('DESCRIBE announcements');
-          console.log('\n📢 Announcements table structure:');
-          announcements.forEach(col => console.log(`  - ${col.Field}: ${col.Type}`));
-          
-          const [announcementCount] = await connection.execute('SELECT COUNT(*) as count FROM announcements');
-          console.log(`📊 Announcements count: ${announcementCount[0].count}`);
-          
-          if (announcementCount[0].count > 0) {
-            const [sampleAnnouncements] = await connection.execute('SELECT title, type, status FROM announcements LIMIT 3');
-            console.log('📝 Sample announcements:');
-            sampleAnnouncements.forEach(announcement => {
-              console.log(`  - ${announcement.title} (${announcement.type}) - ${announcement.status}`);
-            });
-          }
-        } catch (error) {
-          console.log('❌ Announcements table error:', error.message);
-        }
-        
-        // Test database operations
-        console.log('\n🧪 Testing database operations...');
-        
-        // Test insert
-        const [insertResult] = await connection.execute(`
-          INSERT INTO users (username, email, password, role) 
-          VALUES ('test_user', 'test@example.com', 'hashed_password', 'member')
-          ON DUPLICATE KEY UPDATE email = email
-        `);
-        console.log(`✅ Test insert result: ${insertResult.affectedRows} rows affected`);
-        
-        // Test select
-        const [selectResult] = await connection.execute('SELECT username, email, role FROM users WHERE username = ?', ['test_user']);
-        if (selectResult.length > 0) {
-          console.log(`✅ Test select successful: ${selectResult[0].username} found`);
-        }
-        
-        // Test update
-        const [updateResult] = await connection.execute('UPDATE users SET role = ? WHERE username = ?', ['staff', 'test_user']);
-        console.log(`✅ Test update result: ${updateResult.affectedRows} rows affected`);
-        
-        // Test delete
-        const [deleteResult] = await connection.execute('DELETE FROM users WHERE username = ?', ['test_user']);
-        console.log(`✅ Test delete result: ${deleteResult.affectedRows} rows affected`);
-        
-        console.log('\n🎉 Database verification completed successfully!');
-        console.log('\n📊 Database Summary:');
-        console.log(`  - Database: sportgym_db ✅`);
-        console.log(`  - Tables: ${tables.length} ✅`);
-        console.log(`  - Operations: CRUD working ✅`);
-        
-      } else {
-        console.log('❌ No tables found in sportgym_db database');
-      }
-      
-    } else {
-      console.log('❌ sportgym_db database NOT found!');
-      console.log('Available databases:');
-      databases.forEach(db => console.log(`  - ${db.Database}`));
+    const [membersCount] = await connection.execute('SELECT COUNT(*) as count FROM members');
+    console.log(`   Members: ${membersCount[0].count} enregistrements`);
+    
+    const [paymentsCount] = await connection.execute('SELECT COUNT(*) as count FROM payments');
+    console.log(`   Payments: ${paymentsCount[0].count} enregistrements`);
+    
+    const [attendanceCount] = await connection.execute('SELECT COUNT(*) as count FROM attendance');
+    console.log(`   Attendance: ${attendanceCount[0].count} enregistrements`);
+    
+    const [announcementsCount] = await connection.execute('SELECT COUNT(*) as count FROM announcements');
+    console.log(`   Announcements: ${announcementsCount[0].count} enregistrements`);
+    
+    console.log('');
+
+    // Test d'insertion direct dans chaque table
+    console.log('🧪 TEST D\'INSERTION DIRECTE:');
+    
+    // Test Members
+    try {
+      const [memberResult] = await connection.execute(`
+        INSERT INTO members (first_name, last_name, email, membership_type, membership_status) 
+        VALUES (?, ?, ?, ?, ?)
+      `, ['Test User', 'Direct', 'test@example.com', 'basic', 'active']);
+      console.log(`   ✅ Member inséré: ID ${memberResult.insertId}`);
+    } catch (error) {
+      console.log(`   ❌ Member erreur: ${error.message}`);
     }
     
+    // Test Payments
+    try {
+      const [paymentResult] = await connection.execute(`
+        INSERT INTO payments (member_id, amount, payment_type, payment_method, payment_date, status, description) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [1, 25.00, 'membership', 'card', '2026-04-08', 'paid', 'Test payment']);
+      console.log(`   ✅ Payment inséré: ID ${paymentResult.insertId}`);
+    } catch (error) {
+      console.log(`   ❌ Payment erreur: ${error.message}`);
+    }
+    
+    // Test Attendance
+    try {
+      const [attendanceResult] = await connection.execute(`
+        INSERT INTO attendance (member_id, check_in_time, date, notes) 
+        VALUES (?, NOW(), ?, ?)
+      `, [1, '2026-04-08', 'Test attendance']);
+      console.log(`   ✅ Attendance inséré: ID ${attendanceResult.insertId}`);
+    } catch (error) {
+      console.log(`   ❌ Attendance erreur: ${error.message}`);
+    }
+    
+    // Test Announcements
+    try {
+      const [announcementResult] = await connection.execute(`
+        INSERT INTO announcements (title, content, type, status, author_id, publish_date) 
+        VALUES (?, ?, ?, ?, ?, NOW())
+      `, ['Test Direct', 'Test content from direct DB connection', 'general', 'published', 1]);
+      console.log(`   ✅ Announcement inséré: ID ${announcementResult.insertId}`);
+    } catch (error) {
+      console.log(`   ❌ Announcement erreur: ${error.message}`);
+    }
+    
+    console.log('');
+
+    // Compter les enregistrements APRÈS le test
+    console.log('📋 ÉTAT APRÈS TEST D\'INSERTION:');
+    
+    const [membersCountAfter] = await connection.execute('SELECT COUNT(*) as count FROM members');
+    console.log(`   Members: ${membersCountAfter[0].count} enregistrements (+${membersCountAfter[0].count - membersCount[0].count})`);
+    
+    const [paymentsCountAfter] = await connection.execute('SELECT COUNT(*) as count FROM payments');
+    console.log(`   Payments: ${paymentsCountAfter[0].count} enregistrements (+${paymentsCountAfter[0].count - paymentsCount[0].count})`);
+    
+    const [attendanceCountAfter] = await connection.execute('SELECT COUNT(*) as count FROM attendance');
+    console.log(`   Attendance: ${attendanceCountAfter[0].count} enregistrements (+${attendanceCountAfter[0].count - attendanceCount[0].count})`);
+    
+    const [announcementsCountAfter] = await connection.execute('SELECT COUNT(*) as count FROM announcements');
+    console.log(`   Announcements: ${announcementsCountAfter[0].count} enregistrements (+${announcementsCountAfter[0].count - announcementsCount[0].count})`);
+    
+    console.log('');
+
+    // Vérifier les derniers enregistrements
+    console.log('🔍 DERNIERS ENREGISTREMENTS INSÉRÉS:');
+    
+    const [lastMember] = await connection.execute('SELECT * FROM members ORDER BY id DESC LIMIT 1');
+    if (lastMember.length > 0) {
+      console.log(`   Member: ID ${lastMember[0].id}, ${lastMember[0].first_name} ${lastMember[0].last_name}`);
+    }
+    
+    const [lastPayment] = await connection.execute('SELECT * FROM payments ORDER BY id DESC LIMIT 1');
+    if (lastPayment.length > 0) {
+      console.log(`   Payment: ID ${lastPayment[0].id}, $${lastPayment[0].amount}, ${lastPayment[0].status}`);
+    }
+    
+    const [lastAttendance] = await connection.execute('SELECT * FROM attendance ORDER BY id DESC LIMIT 1');
+    if (lastAttendance.length > 0) {
+      console.log(`   Attendance: ID ${lastAttendance[0].id}, Member ${lastAttendance[0].member_id}, ${lastAttendance[0].date}`);
+    }
+    
+    const [lastAnnouncement] = await connection.execute('SELECT * FROM announcements ORDER BY id DESC LIMIT 1');
+    if (lastAnnouncement.length > 0) {
+      console.log(`   Announcement: ID ${lastAnnouncement[0].id}, ${lastAnnouncement[0].title}`);
+    }
+
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('❌ Erreur de connexion:', error.message);
   } finally {
     if (connection) {
       await connection.end();
-      console.log('\n🔌 Connection closed');
+      console.log('\n🔌 Connexion fermée');
     }
   }
 }
 
-// Run the verification
 verifyTiDBDatabase().catch(console.error);
