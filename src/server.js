@@ -83,6 +83,29 @@ try {
   console.error('❌ Failed to load announcements routes:', error.message);
 }
 
+// Test GET route to verify backend is working
+app.get('/api/test', async (req, res) => {
+  try {
+    // Test database connection
+    const { testConnection } = require('./config/database');
+    const dbConnected = await testConnection();
+    
+    res.json({
+      message: 'Backend is working',
+      database: dbConnected ? 'connected' : 'disconnected',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 3001
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Backend test failed',
+      error: error.message,
+      database: 'error'
+    });
+  }
+});
+
 // Test GET route to verify POST routes are defined
 app.get('/api/auth/test', (req, res) => {
   res.json({
