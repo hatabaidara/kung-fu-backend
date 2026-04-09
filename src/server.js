@@ -9,7 +9,8 @@ require('dotenv').config();
 console.log('Server starting...');
 console.log('Version with CRUD fixes loaded');
 console.log('Environment:', process.env.NODE_ENV || 'development');
-console.log('Port:', process.env.PORT || 3001);
+console.log('Port from env:', process.env.PORT);
+console.log('Final PORT:', process.env.PORT || 3001);
 
 const app = express();
 app.set('trust proxy', 1);
@@ -338,6 +339,7 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server successfully started on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log('Health check endpoint available at /api/health');
 });
