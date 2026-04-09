@@ -236,6 +236,14 @@ try {
   console.error('❌ Failed to load test routes:', error.message);
 }
 
+try {
+  const adminRoutes = require('./routes/admin');
+  app.use('/api/admin', adminRoutes);
+  console.log('✅ Admin routes loaded');
+} catch (error) {
+  console.error('❌ Failed to load admin routes:', error.message);
+}
+
 // Debug route to check if authRoutes is loaded
 app.get('/api/debug', (req, res) => {
   res.json({
