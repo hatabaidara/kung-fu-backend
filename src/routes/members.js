@@ -62,18 +62,17 @@ router.post('/', async (req, res) => {
       membership_type, membership_status, join_date, expiry_date
     } = req.body;
 
-    // Generate numeric member ID (smaller for INT range)
-    const memberId = Date.now() % 1000000000;
-
     const [result] = await pool.query(`
       INSERT INTO members (
-        id, first_name, last_name, phone, email, date_of_birth,
+        first_name, last_name, phone, email, date_of_birth,
         membership_type, membership_status, join_date, expiry_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      memberId, first_name, last_name, phone, email, date_of_birth,
+      first_name, last_name, phone, email, date_of_birth,
       membership_type, membership_status, join_date, expiry_date
     ]);
+
+    const memberId = result.insertId;
 
     res.status(201).json({
       message: 'Member created successfully',
