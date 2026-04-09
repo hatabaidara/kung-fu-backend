@@ -7,7 +7,7 @@ require('dotenv').config();
 // Force deploy 2026-04-07
 // Log de démarrage pour confirmer le nouveau code
 console.log('Server starting...');
-console.log('Version with CRUD fixes loaded');
+console.log('Version with CRUD fixes and auto ID generation loaded');
 console.log('Environment:', process.env.NODE_ENV || 'development');
 console.log('Port from env:', process.env.PORT);
 console.log('Final PORT:', process.env.PORT || 3001);
