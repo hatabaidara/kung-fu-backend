@@ -74,6 +74,8 @@ router.post('/', async (req, res) => {
 
     const memberId = result.insertId;
 
+    console.log('CREATE MEMBER - using insertId:', memberId);
+
     res.status(201).json({
       message: 'Member created successfully',
       member: { id: memberId, ...req.body }
