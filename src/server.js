@@ -300,6 +300,32 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Temporary endpoint to fix database columns
+app.post('/api/fix-columns', async (req, res) => {
+  try {
+    console.log('× Fixing database columns...');
+    
+    // Use the existing database connection
+    const { initializeDatabase } = require('./config/database');
+    const db = require('./config/database-tidb-render');
+    
+    // Execute ALTER TABLE queries
+    await db.pool.query('ALTER TABLE members MODIFY COLUMN membership_type VARCHAR(100)');
+    console.log('× Fixed membership_type column');
+    
+    await db.pool.query('ALTER TABLE members MODIFY COLUMN membership_status VARCHAR(50)');
+    console.log('× Fixed membership_status column');
+    
+    res.json({ 
+      message: 'Database columns fixed successfully',
+      columns: ['membership_type', 'membership_status']
+    });
+  } catch (error) {
+    console.error('× Error fixing columns:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
