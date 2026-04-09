@@ -12,6 +12,7 @@ console.log('Environment:', process.env.NODE_ENV || 'development');
 console.log('Port:', process.env.PORT || 3001);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Security middleware
